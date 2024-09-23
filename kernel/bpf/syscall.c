@@ -837,10 +837,22 @@ static int bpf_prog_load(union bpf_attr *attr)
 	atomic_set(&prog->aux->refcnt, 1);
 	prog->gpl_compatible = is_gpl ? 1 : 0;
 
+	#ifdef CONFIG_ANDROID_SPOOF_KERNEL_VERSION_FOR_BPF
+	retry_find_prog_type:
+	#endif
+	
 	/* find program type: socket_filter vs tracing_filter */
 	err = find_prog_type(type, prog);
-	if (err < 0)
+	if (err < 0) {
+#ifdef CONFIG_ANDROID_SPOOF_KERNEL_VERSION_FOR_BPF
+		if (err == -EINVAL && type != BPF_PROG_TYPE_DUMMY) {
+			pr_err("Overriding type = %d to BPF_PROG_TYPE_DUMMY", type);
+			type = BPF_PROG_TYPE_DUMMY;
+			goto retry_find_prog_type;
+		}
+#endif
 		goto free_prog;
+	}
 
 	/* run eBPF verifier */
 	err = bpf_check(&prog, attr);
