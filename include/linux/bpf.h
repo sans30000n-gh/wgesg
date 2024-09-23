@@ -266,6 +266,7 @@ void *bpf_map_area_alloc(size_t size);
 void bpf_map_area_free(void *base);
 
 extern int sysctl_unprivileged_bpf_disabled;
+extern const struct bpf_verifier_ops dummy_prog_ops;
 
 int bpf_map_new_fd(struct bpf_map *map, int flags);
 int bpf_prog_new_fd(struct bpf_prog *prog);
